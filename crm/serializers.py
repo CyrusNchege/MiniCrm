@@ -1,69 +1,56 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User
 from .models import Lead, Contact, Note, Reminder
+from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password
 
-class UserSerializer(serializers.ModelSerializer):
+class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name']
-        read_only_fields = ['id', 'username', 'email', 'first_name', 'last_name']
+        fields = ['id', 'first_name', 'last_name', 'username', 'email', 'password']
+        extra_kwargs = {'password': {'write_only': True}}
 
-class MinimalLeadSerializer(serializers.ModelSerializer):
-    """Slimmed-down serializer for nested lead fields"""
+    def create(self, validated_data):
+        validated_data['password'] = make_password(validated_data['password'])
+        return super().create(validated_data)
+
+class LeadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lead
+        fields = ['id', 'name', 'email', 'company', 'status', 'phone', 'created_at', 'updated_at', 'user']
+        read_only_fields = ['user']  
+
+class LeadRelatedSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lead
         fields = ['id', 'name']
-        read_only_fields = ['id', 'name']
 
 class ContactSerializer(serializers.ModelSerializer):
-    created_by = UserSerializer(read_only=True)
-    lead = MinimalLeadSerializer(read_only=True)
-    lead_id = serializers.IntegerField(write_only=True)
+    lead = LeadRelatedSerializer(read_only=True) 
+    lead_id = serializers.PrimaryKeyRelatedField(queryset=Lead.objects.all(), write_only=True, source='lead')
 
     class Meta:
         model = Contact
-        fields = ['id', 'lead', 'lead_id', 'name', 'email', 'phone', 'created_by', 'created_at']
-        read_only_fields = ['id', 'created_at', 'created_by', 'lead']
-        extra_kwargs = {'lead_id': {'write_only': True}}
+        fields = ['id', 'name', 'email', 'phone', 'lead', 'lead_id', 'user']
+        read_only_fields = ['user'] 
+
+    def create(self, validated_data):
+        validated_data['user'] = self.context['user']
+        return super().create(validated_data)
 
 class NoteSerializer(serializers.ModelSerializer):
-    created_by = UserSerializer(read_only=True)
-    lead = MinimalLeadSerializer(read_only=True)
-    lead_id = serializers.IntegerField(write_only=True)
+    lead = LeadRelatedSerializer(read_only=True) 
+    lead_id = serializers.PrimaryKeyRelatedField(queryset=Lead.objects.all(), write_only=True, source='lead')
 
     class Meta:
         model = Note
-        fields = ['id', 'lead', 'lead_id', 'content', 'created_by', 'created_at']
-        read_only_fields = ['id', 'created_at', 'created_by', 'lead']
-        extra_kwargs = {'lead_id': {'write_only': True}}
+        fields = ['id', 'content', 'created_at', 'lead', 'lead_id', 'user']
+        read_only_fields = ['user'] 
 
 class ReminderSerializer(serializers.ModelSerializer):
-    created_by = UserSerializer(read_only=True)
-    lead = MinimalLeadSerializer(read_only=True)
-    lead_id = serializers.IntegerField(write_only=True)
-    lead_name = serializers.CharField(source='lead.name', read_only=True)
+    lead = LeadRelatedSerializer(read_only=True) 
+    lead_id = serializers.PrimaryKeyRelatedField(queryset=Lead.objects.all(), write_only=True, source='lead')
 
     class Meta:
         model = Reminder
-        fields = ['id', 'lead', 'lead_id', 'lead_name', 'message', 'status', 'remind_at', 'created_by', 'created_at']
-        read_only_fields = ['id', 'created_at', 'created_by', 'lead', 'lead_name']
-        extra_kwargs = {'lead_id': {'write_only': True}}
-
-class LeadSerializer(serializers.ModelSerializer):
-    created_by = UserSerializer(read_only=True)
-    contacts = ContactSerializer(many=True, read_only=True)
-    notes = NoteSerializer(many=True, read_only=True)
-    reminders = ReminderSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Lead
-        fields = ['id', 'name', 'email', 'company', 'status', 'phone', 'created_by', 'created_at', 'updated_at', 'contacts', 'notes', 'reminders']
-        read_only_fields = ['id', 'created_at', 'updated_at', 'created_by', 'contacts', 'notes', 'reminders']
-
-class LeadListSerializer(serializers.ModelSerializer):
-    """Optimized serializer for list view"""
-    created_by = UserSerializer(read_only=True)
-
-    class Meta:
-        model = Lead
-        fields = ['id', 'name', 'email', 'company', 'status', 'phone', 'created_by', 'created_at', 'updated_at']
+        fields = ['id', 'message', 'remind_at', 'created_at', 'status', 'lead', 'lead_id', 'user']
+        read_only_fields = ['user'] 
