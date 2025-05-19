@@ -38,8 +38,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
+
+    # Third-party apps
     'corsheaders',
     'rest_framework',
+    'knox',
+    'django_celery_beat',
+
+    # Local apps
+    'crm',
 
 ]
 
@@ -54,14 +62,18 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CORS_ALLOW_CREDENTIALS = True
+
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
+    'http://127.0.0.1:5173',
     # Add production frontend URL
 ]
 
 REST_FRAMEWORK = {
     
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'knox.auth.TokenAuthentication',
         
     ],
 }
@@ -72,6 +84,15 @@ CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', default='redis://loca
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
+
+
+# Celery Beat settings
+CELERY_BEAT_SCHEDULE = {
+    'check-pending-reminders': {
+        'task': 'crm.tasks.check_pending_reminders',
+        'schedule': 60.0,  # Check every minute
+    },
+}
 
 ROOT_URLCONF = 'core.urls'
 
@@ -107,6 +128,17 @@ DATABASES = {
     }
 }
 
+
+# Email Configurations
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+print(EMAIL_HOST)
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+EMAIL_USE_TLS = True
+EMAIL_PORT = os.getenv("EMAIL_PORT")
+EMAIL_TIMEOUT = 20
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

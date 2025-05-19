@@ -7,11 +7,17 @@ click==8.2.0
 click-didyoumean==0.3.1
 click-plugins==1.1.1
 click-repl==0.3.0
+cron-descriptor==1.4.5
 Django==5.2.1
+django-celery-beat==2.8.1
 django-cors-headers==4.7.0
+django-rest-knox==5.0.2
+django-timezone-field==7.1
 djangorestframework==3.16.0
 kombu==5.5.3
 prompt_toolkit==3.0.51
+psycopg2-binary==2.9.10
+python-crontab==3.2.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.0
 redis==6.1.0
