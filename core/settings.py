@@ -70,6 +70,32 @@ CORS_ALLOWED_ORIGINS = [
     'https://mini-crm-frontend-1tn5.vercel.app', 
     'https://cyruschegecc.ddns.net', 
 ]
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:5173',
+    'https://mini-crm-frontend-1tn5.vercel.app',
+    'https://cyruschegecc.ddns.net',
+]
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 
 REST_FRAMEWORK = {
     
