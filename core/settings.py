@@ -68,6 +68,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
     # Add production frontend URL
+    'https://mini-crm-frontend-1tn5.vercel.app/',
 ]
 
 REST_FRAMEWORK = {
